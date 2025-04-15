@@ -2,6 +2,10 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "app.h"
 
 std::string enum_to_str(QtMsgType type)
@@ -39,6 +43,10 @@ void log_handler(QtMsgType type, const QMessageLogContext &context, const QStrin
 
 int main(int argc, char *argv[])
 {
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+#endif
+
     qInstallMessageHandler(log_handler);
 
     QGuiApplication gui_app(argc, argv);
