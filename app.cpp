@@ -16,7 +16,7 @@ bool App::init_regex()
         ss << "Поймано исключение во время инициализации регулярного выражения:\n\n";
         ss << e.what();
 
-        qCritical("%ls", ss.str().c_str());
+        qCritical("%s", ss.str().c_str());
         emit wantToShowMessage(ss.str().c_str());
     }
 
@@ -38,7 +38,7 @@ bool App::init_fs_path(const std::string str_path, std::filesystem::path& path)
         ss << str_path << "\" в std::filesystem::path:\n\n";
         ss << e.what();
 
-        qCritical("%ls", ss.str().c_str());
+        qCritical("%s", ss.str().c_str());
         emit wantToShowMessage(ss.str().c_str());
     }
 
@@ -79,7 +79,7 @@ bool App::get_first_available_file_num(std::filesystem::path& path)
     }
 
     // Не будем же мы бесконечно его искать? 10к думаю достаточно.
-    qWarning("Не смогли найти свободное число для \"%ls\" потому они все заняты (от 1 до 9,999)", path.c_str());
+    qWarning("Не смогли найти свободное число для \"%s\" потому они все заняты (от 1 до 9,999)", path.c_str());
     return false;
 }
 
@@ -89,18 +89,18 @@ void App::process_files()
 
     for (auto& path : std::filesystem::directory_iterator(fs_input_dir))
     {
-        auto cur_path = path.path().filename().c_str();
+        std::string cur_path = path.path().filename().string();
 
         if (should_exit)
             break;
 
         if (path.is_directory())
         {
-            qInfo("Пропускаем \"%ls\" потому что это директория", cur_path);
+            qInfo("Пропускаем \"%s\" потому что это директория", cur_path.c_str());
             continue;
         } else if (!does_file_match_input_mask(path.path().filename().string()))
         {
-            qInfo("Пропускаем \"%ls\" потому что файл не подходит под маску", cur_path);
+            qInfo("Пропускаем \"%s\" потому что файл не подходит под маску", cur_path.c_str());
             continue;
         }
 
@@ -110,7 +110,7 @@ void App::process_files()
     int idx = 0;
     for (auto& path : std::filesystem::directory_iterator(fs_input_dir))
     {
-        auto cur_path = path.path().c_str();
+        std::string cur_path = path.path().string();
 
         if (should_exit)
             break;
@@ -125,7 +125,7 @@ void App::process_files()
 
         if (!in_stream.is_open())
         {
-            qWarning("Пропускаем \"%ls\" потому что не смогли открыть входной файл", cur_path);
+            qWarning("Пропускаем \"%s\" потому что не смогли открыть входной файл", cur_path.c_str());
             continue;
         }
 
@@ -141,21 +141,22 @@ void App::process_files()
             }
             else
             {
-                qWarning("Пропускаем \"%ls\" потому что не смогли заменить имя файла.", cur_path);
+                qWarning("Пропускаем \"%s\" потому что не смогли заменить имя файла.", cur_path.c_str());
                 continue;
             }
         }
 
+        std::string out_path_str = out_path.string();
         std::ofstream out_stream(out_path, std::ios_base::binary);
 
         if (!out_stream.is_open())
         {
-            qWarning("Пропускаем \"%ls\" потому что не смогли открыть выходной файл", cur_path);
+            qWarning("Пропускаем \"%s\" потому что не смогли открыть выходной файл", cur_path.c_str());
             continue;
         }
 
-        qDebug("Входной  файл: \"%ls\"", cur_path);
-        qDebug("Выходной файл: \"%ls\"", out_path.c_str());
+        qDebug("Входной  файл: \"%s\"", cur_path.c_str());
+        qDebug("Выходной файл: \"%s\"", out_path_str.c_str());
 
         bool ret = do_xor_on_file(in_stream, out_stream, path.file_size());
 
@@ -163,7 +164,7 @@ void App::process_files()
         {
             out_stream.close();
             std::filesystem::remove(out_path);
-            qWarning("Не удалось выполнить операцию XOR над \"%ls\"", cur_path);
+            qWarning("Не удалось выполнить операцию XOR над \"%s\"", cur_path.c_str());
             continue;
         }
 
@@ -171,10 +172,10 @@ void App::process_files()
         {
             in_stream.close();
             std::filesystem::remove(path);
-            qDebug("Удалили \"%ls\"", cur_path);
+            qDebug("Удалили \"%s\"", cur_path.c_str());
         }
 
-        qDebug("Файл \"%ls\" успешно обработан.", out_path.c_str());
+        qDebug("Файл \"%s\" успешно обработан.", out_path_str.c_str());
         qDebug("");
     }
 }
