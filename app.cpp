@@ -1,11 +1,5 @@
 #include "app.h"
 
-#ifdef _WIN32
-#define STR_FORMAT "%ls"
-#else
-#define STR_FORMAT "%s"
-#endif
-
 using namespace std::chrono_literals;
 
 bool App::init_regex()
@@ -22,7 +16,7 @@ bool App::init_regex()
         ss << "Поймано исключение во время инициализации регулярного выражения:\n\n";
         ss << e.what();
 
-        qCritical(STR_FORMAT, ss.str().c_str());
+        qCritical("%ls", ss.str().c_str());
         emit wantToShowMessage(ss.str().c_str());
     }
 
@@ -44,7 +38,7 @@ bool App::init_fs_path(const std::string str_path, std::filesystem::path& path)
         ss << str_path << "\" в std::filesystem::path:\n\n";
         ss << e.what();
 
-        qCritical(STR_FORMAT, ss.str().c_str());
+        qCritical("%ls", ss.str().c_str());
         emit wantToShowMessage(ss.str().c_str());
     }
 
@@ -85,7 +79,7 @@ bool App::get_first_available_file_num(std::filesystem::path& path)
     }
 
     // Не будем же мы бесконечно его искать? 10к думаю достаточно.
-    qWarning("Не смогли найти свободное число для \"" STR_FORMAT "\" потому они все заняты (от 1 до 9,999)", path.c_str());
+    qWarning("Не смогли найти свободное число для \"%ls\" потому они все заняты (от 1 до 9,999)", path.c_str());
     return false;
 }
 
@@ -102,11 +96,11 @@ void App::process_files()
 
         if (path.is_directory())
         {
-            qInfo("Пропускаем \"" STR_FORMAT "\" потому что это директория", cur_path);
+            qInfo("Пропускаем \"%ls\" потому что это директория", cur_path);
             continue;
         } else if (!does_file_match_input_mask(path.path().filename().string()))
         {
-            qInfo("Пропускаем \"" STR_FORMAT "\" потому что файл не подходит под маску", cur_path);
+            qInfo("Пропускаем \"%ls\" потому что файл не подходит под маску", cur_path);
             continue;
         }
 
@@ -131,7 +125,7 @@ void App::process_files()
 
         if (!in_stream.is_open())
         {
-            qWarning("Пропускаем \"" STR_FORMAT "\" потому что не смогли открыть входной файл", cur_path);
+            qWarning("Пропускаем \"%ls\" потому что не смогли открыть входной файл", cur_path);
             continue;
         }
 
@@ -147,7 +141,7 @@ void App::process_files()
             }
             else
             {
-                qWarning("Пропускаем \"" STR_FORMAT "\" потому что не смогли заменить имя файла.", cur_path);
+                qWarning("Пропускаем \"%ls\" потому что не смогли заменить имя файла.", cur_path);
                 continue;
             }
         }
@@ -156,12 +150,12 @@ void App::process_files()
 
         if (!out_stream.is_open())
         {
-            qWarning("Пропускаем \"" STR_FORMAT "\" потому что не смогли открыть выходной файл", cur_path);
+            qWarning("Пропускаем \"%ls\" потому что не смогли открыть выходной файл", cur_path);
             continue;
         }
 
-        qDebug("Входной  файл: \"" STR_FORMAT "\"", cur_path);
-        qDebug("Выходной файл: \"" STR_FORMAT "\"", out_path.c_str());
+        qDebug("Входной  файл: \"%ls\"", cur_path);
+        qDebug("Выходной файл: \"%ls\"", out_path.c_str());
 
         bool ret = do_xor_on_file(in_stream, out_stream, path.file_size());
 
@@ -169,7 +163,7 @@ void App::process_files()
         {
             out_stream.close();
             std::filesystem::remove(out_path);
-            qWarning("Не удалось выполнить операцию XOR над \"" STR_FORMAT "\"", cur_path);
+            qWarning("Не удалось выполнить операцию XOR над \"%ls\"", cur_path);
             continue;
         }
 
@@ -177,10 +171,10 @@ void App::process_files()
         {
             in_stream.close();
             std::filesystem::remove(path);
-            qDebug("Удалили \"" STR_FORMAT "\"", cur_path);
+            qDebug("Удалили \"%ls\"", cur_path);
         }
 
-        qDebug("Файл \"" STR_FORMAT "\" успешно обработан.", out_path.c_str());
+        qDebug("Файл \"%ls\" успешно обработан.", out_path.c_str());
         qDebug("");
     }
 }
